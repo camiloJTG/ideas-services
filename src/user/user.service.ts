@@ -68,7 +68,7 @@ export class UserService {
     if (password) {
       updateUserDto.password = await this.hashService.generateHash(password);
     }
-
+    updateUserDto.updatedAt = new Date();
     const result = await this.userModel
       .findOneAndUpdate({ _id: id }, updateUserDto, { new: true })
       .lean();

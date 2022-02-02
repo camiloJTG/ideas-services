@@ -15,4 +15,6 @@ export class UpdateUserDto {
   @IsNotEmpty()
   @IsString()
   password: string;
+
+  updatedAt: Date;
 }

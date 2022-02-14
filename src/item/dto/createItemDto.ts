@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, Matches } from 'class-validator';
+import { IsString, IsNotEmpty, Matches, IsBoolean } from 'class-validator';
 
 export class CreateItemDto {
   @IsString()
@@ -8,6 +8,9 @@ export class CreateItemDto {
   @IsString()
   @IsNotEmpty()
   description: string;
+
+  @IsBoolean()
+  isCompleted: boolean;
 
   @IsString()
   @IsNotEmpty()

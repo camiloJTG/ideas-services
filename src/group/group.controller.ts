@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -43,6 +44,13 @@ export class GroupController {
     return resp;
   }
 
+  @Delete(':groupId')
+  async deleteGroup(@Param() params: groupParam) {
+    const { groupId } = params;
+    const result = await this.groupService.deleteGroup(groupId);
+    return result;
+  }
+
   @Get(':groupId')
   async getOneGroup(@Param() params: groupParam) {
     const { groupId } = params;
@@ -60,6 +68,22 @@ export class GroupController {
       page,
       cant,
     );
+    const resp = this.responseService.successResponse(HttpStatus.OK, result);
+    return resp;
+  }
+
+  @Get('get-group-and-item/:groupId')
+  async getGroupAndItem(@Param() params: groupParam) {
+    const { groupId } = params;
+    const result = await this.groupService.getOneGroupWithItems(groupId);
+    const resp = this.responseService.successResponse(HttpStatus.OK, result);
+    return resp;
+  }
+
+  @Get('get-groups-by-user/:userId')
+  async getGroupByUserId(@Param() params: userParam) {
+    const { userId } = params;
+    const result = await this.groupService.getAllGroupByUserId(userId);
     const resp = this.responseService.successResponse(HttpStatus.OK, result);
     return resp;
   }

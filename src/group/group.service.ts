@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { MessageConfigService } from 'src/config/messages/config.service';
+import { ItemService } from 'src/item/item.service';
 import { ResponseService } from 'src/utils/response.service';
 import { UserService } from '../user/user.service';
 import { CreateGroupDto } from './dto/createGroupDto';
@@ -16,6 +17,8 @@ export class GroupService {
     private respSvc: ResponseService,
     private msgConfig: MessageConfigService,
     private userService: UserService,
+    @Inject(forwardRef(() => ItemService))
+    private itemService: ItemService,
   ) {}
 
   async createGroup(createGroupDto: CreateGroupDto) {
@@ -36,7 +39,19 @@ export class GroupService {
     return newGroup.save();
   }
 
-  // TODO Service that delete a group
+  async deleteGroup(groupId: string) {
+    const isMongoId = Types.ObjectId.isValid(groupId);
+    if (!isMongoId)
+      return this.respSvc.exceptionResponse(404, this.msgConfig.errorNotFound);
+
+    const findGroup = await this.groupModel.findById(groupId).lean();
+    if (!findGroup)
+      return this.respSvc.exceptionResponse(404, this.msgConfig.errorNotFound);
+
+    const itemsDeleted = await this.itemService.deleteByGroup(groupId);
+    const groupDeleted = await this.groupModel.deleteOne({ _id: groupId });
+    return { itemsDeleted, groupDeleted };
+  }
 
   async updateGroup(groupId: string, updateGroupDto: UpdateGroupDto) {
     const { name } = updateGroupDto;
@@ -96,6 +111,32 @@ export class GroupService {
     return { findGroups, count };
   }
 
-  // TODO Service that get one group with its items
-  // TODO Service that get all groups with its items (paginated)
+  async getOneGroupWithItems(groupId: string) {
+    const isMongoId = Types.ObjectId.isValid(groupId);
+    if (!isMongoId)
+      return this.respSvc.exceptionResponse(404, this.msgConfig.errorNotFound);
+
+    const items = await this.itemService.getByGroupId(groupId);
+    const group = await this.groupModel.findById(groupId);
+    return { group, items };
+  }
+
+  async getAllGroupByUserId(userId: string) {
+    const isMongoId = Types.ObjectId.isValid(userId);
+    if (!isMongoId)
+      return this.respSvc.exceptionResponse(404, this.msgConfig.errorNotFound);
+
+    const groups = await this.groupModel.find({ userId });
+
+    let lists = [];
+    for (const group of groups) {
+      const items = await this.itemService.getByGroupId(group.id);
+      let groupsWithItems = {
+        group,
+        items,
+      };
+      lists.push(groupsWithItems);
+    }
+    return lists;
+  }
 }

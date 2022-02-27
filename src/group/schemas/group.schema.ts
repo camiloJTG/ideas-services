@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
+import { Item } from 'src/item/schemas/item.schema';
 
 @Schema()
 export class Group {

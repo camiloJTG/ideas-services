@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { MessageConfigService } from 'src/config/messages/config.service';
@@ -14,6 +14,7 @@ export class ItemService {
   constructor(
     @InjectModel(Item.name) private itemModel: Model<ItemDocument>,
     private respSvc: ResponseService,
+    @Inject(forwardRef(() => GroupService))
     private groupModel: GroupService,
     private msgConfig: MessageConfigService,
   ) {}
@@ -78,10 +79,22 @@ export class ItemService {
     if (!isMongoId)
       return this.respSvc.exceptionResponse(404, this.msgConfig.errorNotFound);
 
-    const findItem = await this.itemModel.find({ groupId }).lean();
+    const findItem = await this.itemModel
+      .find({ groupId })
+      .populate('group')
+      .lean();
     if (findItem.length === 0)
       return this.respSvc.exceptionResponse(404, this.msgConfig.errorNotFound);
 
     return findItem;
+  }
+
+  async deleteByGroup(groupId: string) {
+    const isMongoId = Types.ObjectId.isValid(groupId);
+    if (!isMongoId)
+      return this.respSvc.exceptionResponse(404, this.msgConfig.errorNotFound);
+
+    const result = await this.itemModel.deleteMany({ groupId });
+    return result;
   }
 }

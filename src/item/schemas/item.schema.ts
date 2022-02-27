@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import * as mongoose from 'mongoose';
+import { Group } from 'src/group/schemas/group.schema';
 
 @Schema()
 export class Item {
@@ -12,8 +13,8 @@ export class Item {
   @Prop({ default: false, required: true })
   isCompleted: boolean;
 
-  @Prop({ type: Types.ObjectId, ref: 'groups' })
-  groupId: Types.ObjectId;
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'groups' }] })
+  group: Group[];
 
   @Prop({ default: new Date() })
   createdAt: Date;

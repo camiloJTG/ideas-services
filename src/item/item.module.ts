@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MsgConfigModule } from 'src/config/messages/config.module';
 import { GroupModule } from 'src/group/group.module';
@@ -11,10 +11,11 @@ import { Item, ItemSchema } from './schemas/item.schema';
   imports: [
     MongooseModule.forFeature([{ name: Item.name, schema: ItemSchema }]),
     MsgConfigModule,
-    GroupModule,
+    forwardRef(() => GroupModule),
     UtilsModule,
   ],
   controllers: [ItemController],
   providers: [ItemService],
+  exports: [ItemService],
 })
 export class ItemModule {}
